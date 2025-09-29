@@ -1,0 +1,1997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Classroom & Timetable Scheduler</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --admin-glow: #ff2a6d;
+            --faculty-glow: #05d9e8;
+            --student-glow: #4ade80;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gradient-1: #667eea;
+            --gradient-2: #764ba2;
+            --gradient-3: #f093fb;
+            --gradient-4: #f5576c;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --gray: #6c757d;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+        /* Welcome Page Styles */
+        .welcome-page {
+            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2), var(--gradient-3), var(--gradient-4));
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .welcome-container {
+            text-align: center;
+            max-width: 800px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .welcome-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .welcome-header {
+            margin-bottom: 40px;
+            position: relative;
+        }
+        .welcome-header h1 {
+            font-size: 3.5rem;
+            color: white;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            position: relative;
+            animation: fadeInUp 1s ease-out;
+        }
+        .welcome-header h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gradient-3), var(--gradient-4));
+            border-radius: 2px;
+            animation: expand 1.5s ease-out forwards;
+        }
+        @keyframes expand {
+            0% { width: 0; }
+            100% { width: 100px; }
+        }
+        .welcome-header p {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+            animation: fadeInUp 1s ease-out 0.3s forwards;
+            opacity: 0;
+        }
+        .login-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideInUp 1s ease-out 0.6s forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        .login-title {
+            color: white;
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            color: white;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+        .form-control {
+            width: 100%;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        .form-control:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        .role-selector {
+            display: flex;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .role-btn {
+            padding: 15px 25px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .role-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--gradient-3), var(--gradient-4));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        .role-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        .role-btn:hover::before {
+            opacity: 0.2;
+        }
+        .role-btn.active {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        .role-btn.admin {
+            border-color: var(--admin-glow);
+            color: var(--admin-glow);
+            text-shadow: 0 0 10px var(--admin-glow);
+        }
+        .role-btn.admin.active {
+            background: rgba(255, 42, 109, 0.2);
+            box-shadow: 0 0 30px var(--admin-glow);
+            border-color: var(--admin-glow);
+        }
+        .role-btn.faculty {
+            border-color: var(--faculty-glow);
+            color: var(--faculty-glow);
+            text-shadow: 0 0 10px var(--faculty-glow);
+        }
+        .role-btn.faculty.active {
+            background: rgba(5, 217, 232, 0.2);
+            box-shadow: 0 0 30px var(--faculty-glow);
+            border-color: var(--faculty-glow);
+        }
+        .role-btn.student {
+            border-color: var(--student-glow);
+            color: var(--student-glow);
+            text-shadow: 0 0 10px var(--student-glow);
+        }
+        .role-btn.student.active {
+            background: rgba(74, 222, 128, 0.2);
+            box-shadow: 0 0 30px var(--student-glow);
+            border-color: var(--student-glow);
+        }
+        .login-btn {
+            background: linear-gradient(45deg, var(--gradient-3), var(--gradient-4));
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+        .login-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            animation: none;
+        }
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        .login-btn:hover::before {
+            left: 100%;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(240, 147, 251, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(240, 147, 251, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(240, 147, 251, 0); }
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .floating-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 15s infinite ease-in-out;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-100px) rotate(180deg); }
+        }
+        .admin-glow-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 42, 109, 0.2) 0%, transparent 70%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            z-index: -1;
+        }
+        .admin-active .admin-glow-effect {
+            opacity: 1;
+        }
+        /* Dashboard Styles (from first version) */
+        .dashboard-page {
+            display: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            padding: 30px 0;
+            color: white;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .dashboard {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        .dashboard-header h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .logout-btn:hover {
+            background: #d01a6c;
+        }
+        .tab-container {
+            margin-bottom: 30px;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 10px 20px;
+            background: #f1f3f5;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group-dashboard {
+            margin-bottom: 20px;
+        }
+        .form-group-dashboard label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        .form-control-dashboard {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-right: 10px;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--secondary);
+        }
+        .btn-success {
+            background: #4ade80;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #22c55e;
+        }
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #e27b14;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filters select, .filters input {
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            min-width: 150px;
+        }
+        .notification {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            background: #e3f2fd;
+            border-left: 5px solid var(--primary);
+            display: flex;
+            align-items: center;
+        }
+        .notification i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        .drag-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #f1f3f5;
+            border-radius: 8px;
+            cursor: move;
+            border: 2px dashed transparent;
+            transition: all 0.3s;
+        }
+        .drag-item:hover {
+            border-color: var(--primary);
+            background: #e3f2fd;
+        }
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .calendar-day {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 150px;
+            border: 1px solid #eee;
+        }
+        .calendar-day h4 {
+            margin-bottom: 10px;
+            color: var(--primary);
+            padding-bottom: 5px;
+            border-bottom: 2px solid #eee;
+        }
+        .calendar-event {
+            background: var(--success);
+            color: white;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-available {
+            background: #4ade80;
+        }
+        .status-unavailable {
+            background: var(--danger);
+        }
+        .status-preferred {
+            background: var(--warning);
+        }
+        .preview-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .share-options {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .share-btn {
+            padding: 10px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        .share-btn:hover {
+            border-color: var(--primary);
+            background: #e3f2fd;
+        }
+        footer {
+            text-align: center;
+            color: white;
+            padding: 30px 0;
+            margin-top: auto;
+            opacity: 0.8;
+        }
+        @media (max-width: 768px) {
+            .welcome-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            .welcome-header h1 {
+                font-size: 2.5rem;
+            }
+            .login-section {
+                padding: 30px 20px;
+            }
+            .calendar {
+                grid-template-columns: 1fr;
+            }
+            .filters {
+                flex-direction: column;
+            }
+            .role-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            .role-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Welcome/Login Page -->
+    <div class="welcome-page" id="welcomePage">
+        <div class="floating-elements">
+            <div class="floating-element" style="width: 150px; height: 150px; top: 20%; left: 10%; animation-duration: 20s; animation-delay: 0s;"></div>
+            <div class="floating-element" style="width: 80px; height: 80px; top: 60%; left: 80%; animation-duration: 15s; animation-delay: 2s;"></div>
+            <div class="floating-element" style="width: 120px; height: 120px; top: 80%; left: 20%; animation-duration: 18s; animation-delay: 4s;"></div>
+            <div class="floating-element" style="width: 60px; height: 60px; top: 40%; left: 70%; animation-duration: 22s; animation-delay: 6s;"></div>
+        </div>
+        <div class="welcome-container">
+            <div class="admin-glow-effect" id="adminGlow"></div>
+            <div class="welcome-header">
+                <h1>New Era of Timetable Scheduling</h1>
+                <p>Experience the future of academic planning with our intelligent, automated scheduling system designed to optimize resources, reduce conflicts, and enhance the educational experience for everyone.</p>
+            </div>
+            <div class="login-section">
+                <h2 class="login-title">Welcome Back</h2>
+                <div class="form-group">
+                    <label for="userId">User ID</label>
+                    <input type="text" id="userId" class="form-control" placeholder="Enter your User ID">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" placeholder="Enter your Password">
+                </div>
+                <div class="form-group">
+                    <label>Who are you logging in as?</label>
+                    <div class="role-selector">
+                        <button class="role-btn admin" onclick="selectRole('admin')">Admin</button>
+                        <button class="role-btn faculty" onclick="selectRole('faculty')">Faculty</button>
+                        <button class="role-btn student" onclick="selectRole('student')">Student</button>
+                    </div>
+                </div>
+                <button class="login-btn" onclick="attemptLogin()">Login to Your Dashboard</button>
+            </div>
+        </div>
+    </div>
+    <!-- Dashboard Page (Hidden initially) -->
+    <div class="dashboard-page" id="dashboardPage">
+        <div class="container">
+            <header>
+                <h1>Smart Classroom & Timetable Scheduler</h1>
+                <p>Automated scheduling system for faculties, students and administrators</p>
+            </header>
+            <!-- Admin Dashboard -->
+            <div class="dashboard" id="adminDashboard" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>Admin Dashboard</h2>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+                <div class="tab-container">
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="collect-data">Collect Faculty Data</button>
+                        <button class="tab-btn" data-tab="generate-timetable">Generate Timetable</button>
+                        <button class="tab-btn" data-tab="manage-constraints">Manage Constraints</button>
+                        <button class="tab-btn" data-tab="analytics">Analytics</button>
+                    </div>
+                    <!-- Collect Faculty Data Tab -->
+                    <div class="tab-content active" id="collect-data">
+                        <h3>Collect Faculty Availability</h3>
+                        <p>Review and approve faculty availability submissions</p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Faculty Name</th>
+                                    <th>Department</th>
+                                    <th>Status</th>
+                                    <th>Submission Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="facultySubmissions">
+                                <tr>
+                                    <td>Dr. Sharma</td>
+                                    <td>Computer Science</td>
+                                    <td><span class="status-indicator status-available"></span> Submitted</td>
+                                    <td>2024-01-15</td>
+                                    <td><button class="btn btn-primary" onclick="reviewFaculty('Dr. Sharma')">Review</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Dr. Patel</td>
+                                    <td>Mathematics</td>
+                                    <td><span class="status-indicator status-unavailable"></span> Pending</td>
+                                    <td>2024-01-10</td>
+                                    <td><button class="btn btn-primary" onclick="reviewFaculty('Dr. Patel')">Review</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Dr. Mehta</td>
+                                    <td>Physics</td>
+                                    <td><span class="status-indicator status-preferred"></span> Submitted</td>
+                                    <td>2024-01-12</td>
+                                    <td><button class="btn btn-primary" onclick="reviewFaculty('Dr. Mehta')">Review</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h3 style="margin-top: 30px;">Upload Faculty Subject Coverage</h3>
+                        <p>Provide details of which faculty teaches which subjects, sections, and batches</p>
+
+                        <div class="form-group-dashboard">
+                            <label>Input Method</label>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 8px;">
+                                <label style="display: flex; align-items: center;">
+                                    <input type="radio" name="inputMethod" value="file" checked> Upload CSV File
+                                </label>
+                                <label style="display: flex; align-items: center;">
+                                    <input type="radio" name="inputMethod" value="manual"> Enter Manually
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- File Upload Option -->
+                        <div id="fileUploadSection">
+                            <div class="form-group-dashboard">
+                                <label>Upload CSV File</label>
+                                <input type="file" accept=".csv" class="form-control-dashboard">
+                                <small style="display: block; margin-top: 5px; color: var(--gray);">
+                                    Format: faculty_name,subject,section,year,branch
+                                </small>
+                            </div>
+                            <button class="btn btn-success">Upload Faculty Data</button>
+                        </div>
+
+                        <!-- Manual Entry Option (hidden by default) -->
+                        <div id="manualEntrySection" style="display: none; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                            <div id="facultyEntries">
+                                <div class="faculty-entry" style="border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px;">
+                                    <div class="form-group-dashboard">
+                                        <label>Faculty Name</label>
+                                        <input type="text" class="form-control-dashboard" placeholder="e.g., Dr. Sharma">
+                                    </div>
+                                    <div class="form-group-dashboard">
+                                        <label>Classes (Add one by one)</label>
+                                        <div class="class-list" style="margin-top: 10px;">
+                                            <div class="class-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: end;">
+                                                <input type="text" class="form-control-dashboard" placeholder="Subject Name">
+                                                <input type="text" class="form-control-dashboard" placeholder="Section (e.g., A, B)">
+                                                <select class="form-control-dashboard" style="width: 120px;">
+                                                    <option>1st year</option>
+                                                    <option>2nd year</option>
+                                                    <option>3rd year</option>
+                                                    <option>4th year</option>
+                                                </select>
+                                                <select class="form-control-dashboard" style="width: 140px;">
+                                                    <option>CSE CORE</option>
+                                                    <option>CSE AI&ML</option>
+                                                    <option>CSE DS</option>
+                                                    <option>CSE CS</option>
+                                                    <option>CSE AI</option>
+                                                </select>
+                                                <button type="button" class="btn btn-outline" style="padding: 8px;">Remove</button>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline" style="margin-top: 10px;" onclick="addNewClass(this)">+ Add New Class</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="addNewFaculty()">+ Add Another Faculty</button>
+                            <button type="button" class="btn btn-success" style="margin-left: 10px;">Save All Faculty Data</button>
+                        </div>
+                    </div>
+                    <!-- Generate Timetable Tab -->
+                    <div class="tab-content" id="generate-timetable">
+                        <h3>Generate Timetable</h3>
+                        <p>Generate timetable based on collected data and constraints</p>
+                        <div class="form-group-dashboard">
+                            <label>Year</label>
+                            <select class="form-control-dashboard" id="yearSelect">
+                                <option value="">Select Year</option>
+                                <option>1st year</option>
+                                <option>2nd year</option>
+                                <option>3rd year</option>
+                                <option>4th year</option>
+                            </select>
+                        </div>
+                        <div class="form-group-dashboard">
+                            <label>Branch (B.Tech - CSE)</label>
+                            <select class="form-control-dashboard" id="branchSelect">
+                                <option value="">Select Branch</option>
+                                <option>CSE CORE</option>
+                                <option>CSE AI&ML</option>
+                                <option>CSE DS</option>
+                                <option>CSE CS</option>
+                                <option>CSE AI</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="generateTimetable()">Generate Timetable</button>
+                        <div id="generationStatus" style="margin: 20px 0; padding: 15px; background: #e3f2fd; border-radius: 8px; display: none;">
+                            <p><i class="fas fa-spinner fa-spin"></i> Generating timetable... This may take a few minutes.</p>
+                            <div style="width: 100%; height: 20px; background: #e9ecef; border-radius: 10px; margin-top: 10px;">
+                                <div id="progressBar" style="width: 0%; height: 100%; background: var(--primary); border-radius: 10px; transition: width 0.5s;"></div>
+                            </div>
+                        </div>
+                        <div id="generatedTimetable" style="display: none;">
+                            <div class="notification">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Timetable generated successfully! Review before publishing.</span>
+                            </div>
+                            <div class="preview-container">
+                                <h4>Preview Generated Timetable</h4>
+                                <div class="calendar">
+                                    <div class="calendar-day">
+                                        <h4>Monday</h4>
+                                        <div class="calendar-event">9:00-10:30 - DSA (Room 101)</div>
+                                        <div class="calendar-event">11:00-12:30 - DBMS (Room 205)</div>
+                                        <div class="calendar-event">2:00-3:30 - OS (Room 301)</div>
+                                    </div>
+                                    <div class="calendar-day">
+                                        <h4>Tuesday</h4>
+                                        <div class="calendar-event">9:00-10:30 - TOC (Room 101)</div>
+                                        <div class="calendar-event">11:00-12:30 - COA (Room 202)</div>
+                                        <div class="calendar-event">2:00-3:30 - DSA (Room 101)</div>
+                                    </div>
+                                    <div class="calendar-day">
+                                        <h4>Wednesday</h4>
+                                        <div class="calendar-event">9:00-10:30 - DBMS (Room 205)</div>
+                                        <div class="calendar-event">11:00-12:30 - OS (Room 301)</div>
+                                        <div class="calendar-event">2:00-3:30 - TOC (Room 101)</div>
+                                    </div>
+                                    <div class="calendar-day">
+                                        <h4>Thursday</h4>
+                                        <div class="calendar-event">9:00-10:30 - COA (Room 202)</div>
+                                        <div class="calendar-event">11:00-12:30 - DSA (Room 101)</div>
+                                        <div class="calendar-event">2:00-3:30 - DBMS (Room 205)</div>
+                                    </div>
+                                    <div class="calendar-day">
+                                        <h4>Friday</h4>
+                                        <div class="calendar-event">9:00-10:30 - OS (Room 301)</div>
+                                        <div class="calendar-event">11:00-12:30 - TOC (Room 101)</div>
+                                        <div class="calendar-event">2:00-3:30 - COA (Room 202)</div>
+                                    </div>
+                                    <div class="calendar-day">
+                                        <h4>Saturday</h4>
+                                        <div class="calendar-event">10:00-12:00 - Lab Session (Lab 1)</div>
+                                        <div class="calendar-event">2:00-4:00 - Tutorial (Room 105)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="share-options">
+                                <button class="btn btn-primary" onclick="saveTimetable()">Save Timetable</button>
+                                <button class="btn btn-warning" onclick="editTimetable()">Edit Timetable</button>
+                                <button class="btn btn-success" onclick="publishTimetable()">Publish & Share</button>
+                                <button class="btn btn-outline">Export as PDF</button>
+                                <button class="btn btn-outline">Export as CSV</button>
+                            </div>
+                        </div>
+
+                        <!-- Timetable History Section -->
+                        <div id="timetableHistory" style="margin-top: 40px; display: none;">
+                            <h3>Generation History</h3>
+                            <div class="preview-container" style="margin-top: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <strong>2nd Year - CSE AI&ML | Generated: 15 Jan 2024, 10:30 AM</strong>
+                                    <div class="share-options" style="gap: 8px; margin: 0;">
+                                        <button class="btn btn-primary">Save Timetable</button>
+                                        <button class="btn btn-warning">Edit Timetable</button>
+                                        <button class="btn btn-success">Publish & Share</button>
+                                        <button class="btn btn-outline">Export as PDF</button>
+                                        <button class="btn btn-outline">Export as CSV</button>
+                                    </div>
+                                </div>
+                                <div class="calendar">
+                                    <div class="calendar-day">
+                                        <h4>Monday</h4>
+                                        <div class="calendar-event">9:00-10:30 - DSA (Room 101)</div>
+                                        <div class="calendar-event">11:00-12:30 - DBMS (Room 205)</div>
+                                    </div>
+                                    <div class="calendar-day">
+                                        <h4>Tuesday</h4>
+                                        <div class="calendar-event">9:00-10:30 - TOC (Room 101)</div>
+                                        <div class="calendar-event">2:00-3:30 - DSA (Room 101)</div>
+                                    </div>
+                                    <div class="calendar-day">
+                                        <h4>Wednesday</h4>
+                                        <div class="calendar-event">11:00-12:30 - OS (Room 301)</div>
+                                        <div class="calendar-event">2:00-3:30 - TOC (Room 101)</div>
+                                    </div>
+                                    <div class="calendar-day">
+                                        <h4>Thursday</h4>
+                                        <div class="calendar-event">11:00-12:30 - DSA (Room 101)</div>
+                                        <div class="calendar-event">2:00-3:30 - DBMS (Room 205)</div>
+                                    </div>
+                                    <div class="calendar-day">
+                                        <h4>Friday</h4>
+                                        <div class="calendar-event">9:00-10:30 - OS (Room 301)</div>
+                                        <div class="calendar-event">11:00-12:30 - TOC (Room 101)</div>
+                                    </div>
+                                    <div class="calendar-day">
+                                        <h4>Saturday</h4>
+                                        <div class="calendar-event">10:00-12:00 - Lab Session (Lab 1)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Manage Constraints Tab -->
+                    <div class="tab-content" id="manage-constraints">
+                        <h3>Manage Timetable Parameters</h3>
+                        <p>Define global parameters for timetable generation</p>
+
+                        <div class="form-group-dashboard">
+                            <label>Number of classrooms available</label>
+                            <input type="number" class="form-control-dashboard" placeholder="e.g., 20">
+                        </div>
+                        <div class="form-group-dashboard">
+                            <label>Number of batches of students</label>
+                            <input type="number" class="form-control-dashboard" placeholder="e.g., 8">
+                        </div>
+                        <div class="form-group-dashboard">
+                            <label>Number of subjects to be taught in a particular semester</label>
+                            <input type="number" class="form-control-dashboard" placeholder="e.g., 6">
+                        </div>
+                        <div class="form-group-dashboard">
+                            <label>Names of subjects (comma-separated)</label>
+                            <input type="text" class="form-control-dashboard" placeholder="e.g., DSA, DBMS, OS, TOC, COA, Maths">
+                        </div>
+                        <div class="form-group-dashboard">
+                            <label>Maximum number of classes per day</label>
+                            <input type="number" class="form-control-dashboard" placeholder="e.g., 5">
+                        </div>
+                        <div class="form-group-dashboard">
+                            <label>Number of classes to be conducted for a subject per week</label>
+                            <input type="number" class="form-control-dashboard" placeholder="e.g., 3">
+                        </div>
+                        <div class="form-group-dashboard">
+                            <label>Number of faculties available for different subjects</label>
+                            <input type="text" class="form-control-dashboard" placeholder="e.g., DSA:3, DBMS:2">
+                        </div>
+                        <div class="form-group-dashboard">
+                            <label>Average number of leaves a faculty member takes in a month</label>
+                            <input type="number" step="0.1" class="form-control-dashboard" placeholder="e.g., 1.5">
+                        </div>
+                        <div class="form-group-dashboard">
+                            <label>Special classes that have fixed slots in timetable (optional)</label>
+                            <textarea class="form-control-dashboard" rows="3" placeholder="e.g., Lab1 on Monday 10-12 in LabA; Tutorial on Friday 2-4 in Room105"></textarea>
+                        </div>
+                        <button class="btn btn-primary">Save Parameters</button>
+
+                        <h4 style="margin: 30px 0 15px 0;">Saved Parameter Sets</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Branch</th>
+                                    <th>Classrooms</th>
+                                    <th>Subjects</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2nd year</td>
+                                    <td>CSE AI&ML</td>
+                                    <td>18</td>
+                                    <td>6</td>
+                                    <td>
+                                        <button class="btn btn-outline">Edit</button>
+                                        <button class="btn btn-outline" style="color: var(--danger); border-color: var(--danger);">Delete</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Analytics Tab -->
+                    <div class="tab-content" id="analytics">
+                        <h3>System Analytics</h3>
+                        <p>View usage statistics and optimization metrics</p>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 30px 0;">
+                            <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; text-align: center;">
+                                <h2 style="font-size: 2rem; color: var(--primary);">87%</h2>
+                                <p>Room Utilization</p>
+                            </div>
+                            <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; text-align: center;">
+                                <h2 style="font-size: 2rem; color: var(--primary);">12</h2>
+                                <p>Average Classes/Day</p>
+                            </div>
+                            <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; text-align: center;">
+                                <h2 style="font-size: 2rem; color: var(--primary);">94%</h2>
+                                <p>Faculty Satisfaction</p>
+                            </div>
+                        </div>
+                        <h4>Room Usage by Day</h4>
+                        <div style="height: 300px; background: #f8f9fa; border-radius: 10px; display: flex; align-items: flex-end; justify-content: space-around; padding: 20px; margin: 20px 0;">
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <div style="width: 40px; background: var(--primary); height: 200px; border-radius: 5px 5px 0 0;"></div>
+                                <p style="margin-top: 10px;">Monday</p>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <div style="width: 40px; background: var(--primary); height: 180px; border-radius: 5px 5px 0 0;"></div>
+                                <p style="margin-top: 10px;">Tuesday</p>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <div style="width: 40px; background: var(--primary); height: 220px; border-radius: 5px 5px 0 0;"></div>
+                                <p style="margin-top: 10px;">Wednesday</p>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <div style="width: 40px; background: var(--primary); height: 190px; border-radius: 5px 5px 0 0;"></div>
+                                <p style="margin-top: 10px;">Thursday</p>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <div style="width: 40px; background: var(--primary); height: 160px; border-radius: 5px 5px 0 0;"></div>
+                                <p style="margin-top: 10px;">Friday</p>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <div style="width: 40px; background: var(--primary); height: 100px; border-radius: 5px 5px 0 0;"></div>
+                                <p style="margin-top: 10px;">Saturday</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Faculty Dashboard -->
+            <div class="dashboard" id="facultyDashboard" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>Faculty Dashboard - Welcome Dr. Sharma</h2>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+                <div class="tab-container">
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="availability">Set Availability</button>
+                        <button class="tab-btn" data-tab="my-timetable">My Timetable</button>
+                        <button class="tab-btn" data-tab="classes">My Classes</button>
+                        <button class="tab-btn" data-tab="requests">Requests</button>
+                    </div>
+                    <!-- Set Availability Tab -->
+                    <div class="tab-content active" id="availability">
+                        <h3>Set Your Availability</h3>
+                        <p>Mark your available, unavailable, and preferred time slots for the upcoming semester</p>
+                        <div class="notification">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Deadline for submission: January 30, 2024. Please submit before the deadline.</span>
+                        </div>
+                        <div class="calendar">
+                            <div class="calendar-day">
+                                <h4>Monday</h4>
+                                <div class="drag-item" draggable="true">
+                                    <strong>9:00-10:30</strong> - Available
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>11:00-12:30</strong> - Preferred
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>2:00-3:30</strong> - Available
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>4:00-5:30</strong> - Unavailable
+                                </div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Tuesday</h4>
+                                <div class="drag-item" draggable="true">
+                                    <strong>9:00-10:30</strong> - Available
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>11:00-12:30</strong> - Available
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>2:00-3:30</strong> - Preferred
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>4:00-5:30</strong> - Unavailable
+                                </div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Wednesday</h4>
+                                <div class="drag-item" draggable="true">
+                                    <strong>9:00-10:30</strong> - Unavailable
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>11:00-12:30</strong> - Unavailable
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>2:00-3:30</strong> - Available
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>4:00-5:30</strong> - Available
+                                </div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Thursday</h4>
+                                <div class="drag-item" draggable="true">
+                                    <strong>9:00-10:30</strong> - Available
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>11:00-12:30</strong> - Preferred
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>2:00-3:30</strong> - Available
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>4:00-5:30</strong> - Unavailable
+                                </div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Friday</h4>
+                                <div class="drag-item" draggable="true">
+                                    <strong>9:00-10:30</strong> - Available
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>11:00-12:30</strong> - Available
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>2:00-3:30</strong> - Preferred
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>4:00-5:30</strong> - Unavailable
+                                </div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Saturday</h4>
+                                <div class="drag-item" draggable="true">
+                                    <strong>10:00-12:00</strong> - Available
+                                </div>
+                                <div class="drag-item" draggable="true">
+                                    <strong>2:00-4:00</strong> - Unavailable
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin: 20px 0;">
+                            <button class="btn btn-success">Submit Availability</button>
+                            <button class="btn btn-outline" style="margin-left: 10px;">Save Draft</button>
+                        </div>
+                        <div class="form-group-dashboard">
+                            <label>Additional Notes or Requests</label>
+                            <textarea class="form-control-dashboard" rows="4" placeholder="Please mention any special requests or considerations..."></textarea>
+                        </div>
+                    </div>
+                    <!-- My Timetable Tab -->
+                    <div class="tab-content" id="my-timetable">
+                        <h3>My Personal Timetable</h3>
+                        <p>Your schedule for Spring 2024 semester</p>
+                        <div class="filters">
+                            <select>
+                                <option>Spring 2024</option>
+                                <option>Fall 2023</option>
+                            </select>
+                            <select>
+                                <option>Weekly View</option>
+                                <option>Daily View</option>
+                            </select>
+                        </div>
+                        <div class="calendar">
+                            <div class="calendar-day">
+                                <h4>Monday</h4>
+                                <div class="calendar-event">9:00-10:30 - CS101 (Room 101)</div>
+                                <div class="calendar-event">11:00-12:30 - MATH201 (Room 205)</div>
+                                <div class="calendar-event">2:00-3:30 - Office Hours (Room 301)</div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Tuesday</h4>
+                                <div class="calendar-event">9:00-10:30 - CS102 (Room 101)</div>
+                                <div class="calendar-event">2:00-3:30 - CS101 (Room 101)</div>
+                                <div class="calendar-event">4:00-5:30 - Department Meeting</div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Wednesday</h4>
+                                <div class="calendar-event">2:00-3:30 - CS102 (Room 101)</div>
+                                <div class="calendar-event">4:00-5:30 - Research Group</div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Thursday</h4>
+                                <div class="calendar-event">11:00-12:30 - CS101 (Room 101)</div>
+                                <div class="calendar-event">2:00-3:30 - MATH201 (Room 205)</div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Friday</h4>
+                                <div class="calendar-event">11:00-12:30 - CS102 (Room 101)</div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Saturday</h4>
+                                <div class="calendar-event">10:00-12:00 - Lab Session (Lab 1)</div>
+                            </div>
+                        </div>
+                        <div class="share-options">
+                            <button class="btn btn-outline">Export as PDF</button>
+                            <button class="btn btn-outline">Add to Google Calendar</button>
+                            <button class="btn btn-outline">Print Timetable</button>
+                        </div>
+                    </div>
+                    <!-- My Classes Tab -->
+                    <div class="tab-content" id="classes">
+                        <h3>My Classes</h3>
+                        <p>Details of courses you are teaching this semester</p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>Section</th>
+                                    <th>Students</th>
+                                    <th>Room</th>
+                                    <th>Times</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>CS101 - Introduction to Programming</td>
+                                    <td>A</td>
+                                    <td>45</td>
+                                    <td>Room 101</td>
+                                    <td>Mon 9-10:30, Thu 11-12:30</td>
+                                    <td><button class="btn btn-outline">View Details</button></td>
+                                </tr>
+                                <tr>
+                                    <td>CS102 - Data Structures</td>
+                                    <td>B</td>
+                                    <td>38</td>
+                                    <td>Room 101</td>
+                                    <td>Tue 9-10:30, Fri 11-12:30</td>
+                                    <td><button class="btn btn-outline">View Details</button></td>
+                                </tr>
+                                <tr>
+                                    <td>MATH201 - Calculus II</td>
+                                    <td>C</td>
+                                    <td>52</td>
+                                    <td>Room 205</td>
+                                    <td>Mon 11-12:30, Thu 2-3:30</td>
+                                    <td><button class="btn btn-outline">View Details</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top: 30px;">
+                            <h4>Class Details - CS101</h4>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                                <p><strong>Instructor:</strong> Dr. Sharma</p>
+                                <p><strong>Capacity:</strong> 50 students</p>
+                                <p><strong>Current Enrollment:</strong> 45 students</p>
+                                <p><strong>Required Equipment:</strong> Projector, Whiteboard, Computer Lab Access</p>
+                                <p><strong>Office Hours:</strong> Wednesday 4-5:30 PM, Room 301</p>
+                                <button class="btn btn-primary">Send Announcement to Class</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Requests Tab -->
+                    <div class="tab-content" id="requests">
+                        <h3>My Requests</h3>
+                        <p>View status of your availability submission and other requests</p>
+                        <div class="notification">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Your availability for Spring 2024 has been approved by the administrator.</span>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Request Type</th>
+                                    <th>Date Submitted</th>
+                                    <th>Status</th>
+                                    <th>Details</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Availability Submission</td>
+                                    <td>2024-01-15</td>
+                                    <td><span class="status-indicator status-available"></span> Approved</td>
+                                    <td>Semester: Spring 2024</td>
+                                    <td><button class="btn btn-outline">View</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Room Change Request</td>
+                                    <td>2024-01-10</td>
+                                    <td><span class="status-indicator status-preferred"></span> Pending</td>
+                                    <td>CS101 from Room 101 to Lab 3</td>
+                                    <td><button class="btn btn-outline">View</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Time Slot Adjustment</td>
+                                    <td>2023-12-20</td>
+                                    <td><span class="status-indicator status-unavailable"></span> Rejected</td>
+                                    <td>Move CS102 to morning slot</td>
+                                    <td><button class="btn btn-outline">View</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top: 30px;">
+                            <h4>Submit New Request</h4>
+                            <div class="form-group-dashboard">
+                                <label>Request Type</label>
+                                <select class="form-control-dashboard">
+                                    <option>Availability Update</option>
+                                    <option>Room Change</option>
+                                    <option>Time Slot Adjustment</option>
+                                    <option>Equipment Request</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group-dashboard">
+                                <label>Details</label>
+                                <textarea class="form-control-dashboard" rows="4" placeholder="Please provide details of your request..."></textarea>
+                            </div>
+                            <button class="btn btn-primary">Submit Request</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Student Dashboard -->
+            <div class="dashboard" id="studentDashboard" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>Student Dashboard - Welcome Rohan Patel</h2>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+                <div class="tab-container">
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="my-schedule">My Schedule</button>
+                        <button class="tab-btn" data-tab="courses">My Courses</button>
+                        <button class="tab-btn" data-tab="search">Search Timetable</button>
+                        <button class="tab-btn" data-tab="settings">Settings</button>
+                    </div>
+                    <!-- My Schedule Tab -->
+                    <div class="tab-content active" id="my-schedule">
+                        <h3>My Class Schedule</h3>
+                        <p>Your personalized timetable for Spring 2024 semester</p>
+                        <div class="filters">
+                            <select>
+                                <option>Spring 2024</option>
+                                <option>Fall 2023</option>
+                            </select>
+                            <select>
+                                <option>Weekly View</option>
+                                <option>Daily View</option>
+                            </select>
+                            <button class="btn btn-outline">Export to Calendar</button>
+                        </div>
+                        <div class="calendar">
+                            <div class="calendar-day">
+                                <h4>Monday</h4>
+                                <div class="calendar-event">9:00-10:30 - CS101 (Room 101)</div>
+                                <div class="calendar-event">11:00-12:30 - MATH201 (Room 205)</div>
+                                <div class="calendar-event" style="background: #f72585;">2:00-3:30 - PHYS101 (Room 301)</div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Tuesday</h4>
+                                <div class="calendar-event">9:00-10:30 - CS102 (Room 101)</div>
+                                <div class="calendar-event" style="background: #f8961e;">11:00-12:30 - ENG101 (Room 202)</div>
+                                <div class="calendar-event">2:00-3:30 - CS101 (Room 101)</div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Wednesday</h4>
+                                <div class="calendar-event" style="background: #f72585;">9:00-10:30 - MATH201 (Room 205)</div>
+                                <div class="calendar-event">11:00-12:30 - PHYS101 (Room 301)</div>
+                                <div class="calendar-event">2:00-3:30 - CS102 (Room 101)</div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Thursday</h4>
+                                <div class="calendar-event" style="background: #f8961e;">9:00-10:30 - ENG101 (Room 202)</div>
+                                <div class="calendar-event">11:00-12:30 - CS101 (Room 101)</div>
+                                <div class="calendar-event" style="background: #f72585;">2:00-3:30 - MATH201 (Room 205)</div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Friday</h4>
+                                <div class="calendar-event">9:00-10:30 - PHYS101 (Room 301)</div>
+                                <div class="calendar-event">11:00-12:30 - CS102 (Room 101)</div>
+                                <div class="calendar-event" style="background: #f8961e;">2:00-3:30 - ENG101 (Room 202)</div>
+                            </div>
+                            <div class="calendar-day">
+                                <h4>Saturday</h4>
+                                <div class="calendar-event" style="background: #7209b7;">10:00-12:00 - Lab Session (Lab 1)</div>
+                                <div class="calendar-event" style="background: #4895ef;">2:00-4:00 - Tutorial (Room 105)</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px;">
+                            <h4>Legend</h4>
+                            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div style="width: 15px; height: 15px; background: #4cc9f0; margin-right: 5px; border-radius: 3px;"></div>
+                                    <span>Computer Science</span>
+                                </div>
+                                <div style="display: flex; align-items: center;">
+                                    <div style="width: 15px; height: 15px; background: #f72585; margin-right: 5px; border-radius: 3px;"></div>
+                                    <span>Physics</span>
+                                </div>
+                                <div style="display: flex; align-items: center;">
+                                    <div style="width: 15px; height: 15px; background: #f8961e; margin-right: 5px; border-radius: 3px;"></div>
+                                    <span>English</span>
+                                </div>
+                                <div style="display: flex; align-items: center;">
+                                    <div style="width: 15px; height: 15px; background: #7209b7; margin-right: 5px; border-radius: 3px;"></div>
+                                    <span>Lab</span>
+                                </div>
+                                <div style="display: flex; align-items: center;">
+                                    <div style="width: 15px; height: 15px; background: #4895ef; margin-right: 5px; border-radius: 3px;"></div>
+                                    <span>Tutorial</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- My Courses Tab -->
+                    <div class="tab-content" id="courses">
+                        <h3>My Courses</h3>
+                        <p>Details of courses you are enrolled in this semester</p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>Credits</th>
+                                    <th>Instructor</th>
+                                    <th>Room</th>
+                                    <th>Times</th>
+                                    <th>Enrollment</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>CS101 - Introduction to Programming</td>
+                                    <td>3</td>
+                                    <td>Dr. Sharma</td>
+                                    <td>Room 101</td>
+                                    <td>Mon 9-10:30, Thu 11-12:30</td>
+                                    <td>45/50</td>
+                                    <td><button class="btn btn-outline">View Syllabus</button></td>
+                                </tr>
+                                <tr>
+                                    <td>CS102 - Data Structures</td>
+                                    <td>3</td>
+                                    <td>Dr. Sharma</td>
+                                    <td>Room 101</td>
+                                    <td>Tue 9-10:30, Fri 11-12:30</td>
+                                    <td>38/50</td>
+                                    <td><button class="btn btn-outline">View Syllabus</button></td>
+                                </tr>
+                                <tr>
+                                    <td>MATH201 - Calculus II</td>
+                                    <td>4</td>
+                                    <td>Dr. Sharma</td>
+                                    <td>Room 205</td>
+                                    <td>Mon 11-12:30, Thu 2-3:30</td>
+                                    <td>52/60</td>
+                                    <td><button class="btn btn-outline">View Syllabus</button></td>
+                                </tr>
+                                <tr>
+                                    <td>PHYS101 - Physics I</td>
+                                    <td>4</td>
+                                    <td>Dr. Mehta</td>
+                                    <td>Room 301</td>
+                                    <td>Wed 9-10:30, Fri 9-10:30</td>
+                                    <td>48/50</td>
+                                    <td><button class="btn btn-outline">View Syllabus</button></td>
+                                </tr>
+                                <tr>
+                                    <td>ENG101 - English Composition</td>
+                                    <td>3</td>
+                                    <td>Dr. Patel</td>
+                                    <td>Room 202</td>
+                                    <td>Tue 11-12:30, Fri 2-3:30</td>
+                                    <td>35/40</td>
+                                    <td><button class="btn btn-outline">View Syllabus</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top: 30px;">
+                            <h4>Course Progress</h4>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 20px;">
+                                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                    <h4>CS101 - Introduction to Programming</h4>
+                                    <p>Grade: A-</p>
+                                    <p>Attendance: 92%</p>
+                                    <div style="width: 100%; height: 20px; background: #e9ecef; border-radius: 10px; margin: 10px 0;">
+                                        <div style="width: 85%; height: 100%; background: var(--success); border-radius: 10px;"></div>
+                                    </div>
+                                    <p>Progress: 85%</p>
+                                </div>
+                                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                    <h4>MATH201 - Calculus II</h4>
+                                    <p>Grade: B+</p>
+                                    <p>Attendance: 88%</p>
+                                    <div style="width: 100%; height: 20px; background: #e9ecef; border-radius: 10px; margin: 10px 0;">
+                                        <div style="width: 78%; height: 100%; background: var(--warning); border-radius: 10px;"></div>
+                                    </div>
+                                    <p>Progress: 78%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Search Timetable Tab -->
+                    <div class="tab-content" id="search">
+                        <h3>Search Timetable</h3>
+                        <p>Find classes by faculty, subject, room, or time slot</p>
+                        <div class="filters">
+                            <select id="searchType">
+                                <option>Search by Faculty</option>
+                                <option>Search by Subject</option>
+                                <option>Search by Room</option>
+                                <option>Search by Time</option>
+                            </select>
+                            <input type="text" id="searchQuery" class="form-control-dashboard" placeholder="Enter search term...">
+                            <button class="btn btn-primary" onclick="searchTimetable()">Search</button>
+                        </div>
+                        <div id="searchResults">
+                            <h4>Search Results for "Dr. Sharma"</h4>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Course</th>
+                                        <th>Faculty</th>
+                                        <th>Room</th>
+                                        <th>Time</th>
+                                        <th>Day</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>CS101 - Introduction to Programming</td>
+                                        <td>Dr. Sharma</td>
+                                        <td>Room 101</td>
+                                        <td>9:00-10:30</td>
+                                        <td>Monday</td>
+                                        <td><button class="btn btn-outline">Add to My Schedule</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>CS101 - Introduction to Programming</td>
+                                        <td>Dr. Sharma</td>
+                                        <td>Room 101</td>
+                                        <td>11:00-12:30</td>
+                                        <td>Thursday</td>
+                                        <td><button class="btn btn-outline">Add to My Schedule</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>CS102 - Data Structures</td>
+                                        <td>Dr. Sharma</td>
+                                        <td>Room 101</td>
+                                        <td>9:00-10:30</td>
+                                        <td>Tuesday</td>
+                                        <td><button class="btn btn-outline">Add to My Schedule</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>CS102 - Data Structures</td>
+                                        <td>Dr. Sharma</td>
+                                        <td>Room 101</td>
+                                        <td>11:00-12:30</td>
+                                        <td>Friday</td>
+                                        <td><button class="btn btn-outline">Add to My Schedule</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>MATH201 - Calculus II</td>
+                                        <td>Dr. Sharma</td>
+                                        <td>Room 205</td>
+                                        <td>11:00-12:30</td>
+                                        <td>Monday</td>
+                                        <td><button class="btn btn-outline">Add to My Schedule</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>MATH201 - Calculus II</td>
+                                        <td>Dr. Sharma</td>
+                                        <td>Room 205</td>
+                                        <td>2:00-3:30</td>
+                                        <td>Thursday</td>
+                                        <td><button class="btn btn-outline">Add to My Schedule</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top: 30px;">
+                            <h4>Advanced Filters</h4>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px;">
+                                <div class="form-group-dashboard">
+                                    <label>Department</label>
+                                    <select class="form-control-dashboard">
+                                        <option>All Departments</option>
+                                        <option>Computer Science</option>
+                                        <option>Mathematics</option>
+                                        <option>Physics</option>
+                                        <option>English</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-dashboard">
+                                    <label>Time Range</label>
+                                    <select class="form-control-dashboard">
+                                        <option>Any Time</option>
+                                        <option>Morning (8AM-12PM)</option>
+                                        <option>Afternoon (12PM-5PM)</option>
+                                        <option>Evening (5PM-9PM)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-dashboard">
+                                    <label>Day of Week</label>
+                                    <select class="form-control-dashboard">
+                                        <option>Any Day</option>
+                                        <option>Monday</option>
+                                        <option>Tuesday</option>
+                                        <option>Wednesday</option>
+                                        <option>Thursday</option>
+                                        <option>Friday</option>
+                                        <option>Saturday</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary">Apply Filters</button>
+                        </div>
+                    </div>
+                    <!-- Settings Tab -->
+                    <div class="tab-content" id="settings">
+                        <h3>Account Settings</h3>
+                        <p>Manage your profile and notification preferences</p>
+                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-top: 30px;">
+                            <div>
+                                <h4>Profile Information</h4>
+                                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                                    <div class="form-group-dashboard">
+                                        <label>Full Name</label>
+                                        <input type="text" class="form-control-dashboard" value="Rohan Patel">
+                                    </div>
+                                    <div class="form-group-dashboard">
+                                        <label>Student ID</label>
+                                        <input type="text" class="form-control-dashboard" value="STU2024001" disabled>
+                                    </div>
+                                    <div class="form-group-dashboard">
+                                        <label>Email</label>
+                                        <input type="email" class="form-control-dashboard" value="rohan.patel@university.edu">
+                                    </div>
+                                    <div class="form-group-dashboard">
+                                        <label>Phone</label>
+                                        <input type="tel" class="form-control-dashboard" value="+1 (555) 123-4567">
+                                    </div>
+                                    <button class="btn btn-primary">Update Profile</button>
+                                </div>
+                            </div>
+                            <div>
+                                <h4>Notification Preferences</h4>
+                                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                                    <div style="margin-bottom: 15px;">
+                                        <input type="checkbox" id="emailNotif" checked>
+                                        <label for="emailNotif" style="margin-left: 10px;">Email Notifications</label>
+                                    </div>
+                                    <div style="margin-bottom: 15px;">
+                                        <input type="checkbox" id="smsNotif">
+                                        <label for="smsNotif" style="margin-left: 10px;">SMS Notifications</label>
+                                    </div>
+                                    <div style="margin-bottom: 15px;">
+                                        <input type="checkbox" id="pushNotif" checked>
+                                        <label for="pushNotif" style="margin-left: 10px;">Push Notifications</label>
+                                    </div>
+                                    <div style="margin-bottom: 15px;">
+                                        <input type="checkbox" id="scheduleChange" checked>
+                                        <label for="scheduleChange" style="margin-left: 10px;">Schedule Changes</label>
+                                    </div>
+                                    <div style="margin-bottom: 15px;">
+                                        <input type="checkbox" id="assignmentDue" checked>
+                                        <label for="assignmentDue" style="margin-left: 10px;">Assignment Due Dates</label>
+                                    </div>
+                                    <div style="margin-bottom: 15px;">
+                                        <input type="checkbox" id="examReminder" checked>
+                                        <label for="examReminder" style="margin-left: 10px;">Exam Reminders</label>
+                                    </div>
+                                    <button class="btn btn-primary">Save Preferences</button>
+                                </div>
+                                <h4 style="margin-top: 30px;">Change Password</h4>
+                                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                                    <div class="form-group-dashboard">
+                                        <label>Current Password</label>
+                                        <input type="password" class="form-control-dashboard">
+                                    </div>
+                                    <div class="form-group-dashboard">
+                                        <label>New Password</label>
+                                        <input type="password" class="form-control-dashboard">
+                                    </div>
+                                    <div class="form-group-dashboard">
+                                        <label>Confirm New Password</label>
+                                        <input type="password" class="form-control-dashboard">
+                                    </div>
+                                    <button class="btn btn-primary">Change Password</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer>
+                <p>Smart Classroom & Timetable Scheduler System &copy; 2024</p>
+                <p>Designed to streamline academic scheduling and classroom management</p>
+            </footer>
+        </div>
+    </div>
+    <script>
+        // Global variables to store user data
+        let currentUser = null;
+        let currentRole = null;
+        // Track selected role
+        let selectedRole = null;
+
+        // Function to handle role selection
+        function selectRole(role) {
+            // Remove active class from all buttons
+            const roleButtons = document.querySelectorAll('.role-btn');
+            roleButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+            // Add active class to selected button
+            const selectedButton = document.querySelector(`.role-btn.${role}`);
+            if (selectedButton) {
+                selectedButton.classList.add('active');
+                selectedRole = role;
+                // Show admin glow effect if admin is selected
+                const adminGlow = document.getElementById('adminGlow');
+                if (role === 'admin') {
+                    document.querySelector('.welcome-container').classList.add('admin-active');
+                } else {
+                    document.querySelector('.welcome-container').classList.remove('admin-active');
+                }
+            }
+        }
+
+        // Function to handle login
+        function attemptLogin() {
+            const userId = document.getElementById('userId').value;
+            const password = document.getElementById('password').value;
+            if (!userId || !password) {
+                alert('Please enter both User ID and Password');
+                return;
+            }
+            if (!selectedRole) {
+                alert('Please select your role (Admin, Faculty, or Student)');
+                return;
+            }
+            // In a real application, you would validate credentials with a server
+            // For this demo, we'll just simulate successful login
+            currentUser = userId;
+            currentRole = selectedRole;
+            // Hide welcome page
+            document.getElementById('welcomePage').style.display = 'none';
+            // Show dashboard page
+            document.getElementById('dashboardPage').style.display = 'flex';
+            // Show appropriate dashboard
+            if (currentRole === 'admin') {
+                document.getElementById('adminDashboard').style.display = 'block';
+                document.querySelector('#adminDashboard .dashboard-header h2').textContent = `Admin Dashboard - Welcome ${userId}`;
+            } else if (currentRole === 'faculty') {
+                document.getElementById('facultyDashboard').style.display = 'block';
+                document.querySelector('#facultyDashboard .dashboard-header h2').textContent = `Faculty Dashboard - Welcome Dr. ${userId}`;
+            } else if (currentRole === 'student') {
+                document.getElementById('studentDashboard').style.display = 'block';
+                document.querySelector('#studentDashboard .dashboard-header h2').textContent = `Student Dashboard - Welcome ${userId}`;
+            }
+            // Initialize tabs
+            initializeTabs();
+        }
+
+        // Logout function
+        function logout() {
+            currentUser = null;
+            currentRole = null;
+            selectedRole = null;
+            // Hide all dashboards
+            document.getElementById('adminDashboard').style.display = 'none';
+            document.getElementById('facultyDashboard').style.display = 'none';
+            document.getElementById('studentDashboard').style.display = 'none';
+            // Hide dashboard page
+            document.getElementById('dashboardPage').style.display = 'none';
+            // Show welcome page
+            document.getElementById('welcomePage').style.display = 'flex';
+            // Reset form fields
+            document.getElementById('userId').value = '';
+            document.getElementById('password').value = '';
+            // Remove active class from role buttons
+            const roleButtons = document.querySelectorAll('.role-btn');
+            roleButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+            // Remove admin glow effect
+            document.querySelector('.welcome-container').classList.remove('admin-active');
+        }
+
+        // Initialize tab functionality
+        function initializeTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active class from all buttons in this tab container
+                    const tabContainer = this.closest('.tab-container');
+                    const allTabBtns = tabContainer.querySelectorAll('.tab-btn');
+                    allTabBtns.forEach(b => b.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    // Hide all tab content in this container
+                    const tabContents = tabContainer.querySelectorAll('.tab-content');
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    // Show corresponding tab content
+                    const tabId = this.getAttribute('data-tab');
+                    const tabContent = tabContainer.querySelector(`#${tabId}`);
+                    if (tabContent) {
+                        tabContent.classList.add('active');
+                    }
+                });
+            });
+
+            // Toggle input method for faculty data
+            const inputMethodRadios = document.querySelectorAll('input[name="inputMethod"]');
+            inputMethodRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'file') {
+                        document.getElementById('fileUploadSection').style.display = 'block';
+                        document.getElementById('manualEntrySection').style.display = 'none';
+                    } else {
+                        document.getElementById('fileUploadSection').style.display = 'none';
+                        document.getElementById('manualEntrySection').style.display = 'block';
+                    }
+                });
+            });
+        }
+
+        // Generate timetable function
+        function generateTimetable() {
+            const statusDiv = document.getElementById('generationStatus');
+            const progressBar = document.getElementById('progressBar');
+            const generatedTimetable = document.getElementById('generatedTimetable');
+            const historyDiv = document.getElementById('timetableHistory');
+
+            // Show generation status
+            statusDiv.style.display = 'block';
+            // Simulate progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                progressBar.style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        statusDiv.style.display = 'none';
+                        generatedTimetable.style.display = 'block';
+                        historyDiv.style.display = 'block';
+                    }, 1000);
+                }
+            }, 200);
+        }
+
+        // Save timetable function
+        function saveTimetable() {
+            alert('Timetable saved successfully!');
+        }
+
+        // Edit timetable function
+        function editTimetable() {
+            alert('Edit mode activated. You can now drag and drop classes to new time slots.');
+        }
+
+        // Publish timetable function
+        function publishTimetable() {
+            alert('Timetable published successfully! Notifications have been sent to all faculties and students.');
+        }
+
+        // Review faculty function
+        function reviewFaculty(facultyName) {
+            alert(`Reviewing availability for ${facultyName}. You can approve, request changes, or reject this submission.`);
+        }
+
+        // Search timetable function
+        function searchTimetable() {
+            const searchType = document.getElementById('searchType').value;
+            const searchQuery = document.getElementById('searchQuery').value;
+            if (searchQuery.trim() === '') {
+                alert('Please enter a search term');
+                return;
+            }
+            // In a real application, this would query a database
+            // For this demo, we'll just show a message
+            document.querySelector('#search h4').textContent = `Search Results for "${searchQuery}"`;
+        }
+
+        // Add new class row
+        function addNewClass(button) {
+            const container = button.closest('.class-list');
+            const newItem = container.querySelector('.class-item').cloneNode(true);
+            newItem.querySelectorAll('input').forEach(inp => inp.value = '');
+            newItem.querySelector('button').textContent = 'Remove';
+            newItem.querySelector('button').onclick = function() { this.closest('.class-item').remove(); };
+            container.appendChild(newItem);
+        }
+
+        // Add new faculty entry
+        function addNewFaculty() {
+            const entries = document.getElementById('facultyEntries');
+            const firstEntry = entries.querySelector('.faculty-entry');
+            const newEntry = firstEntry.cloneNode(true);
+            newEntry.querySelectorAll('input').forEach(inp => inp.value = '');
+            entries.appendChild(newEntry);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add drag and drop functionality for faculty availability
+            const dragItems = document.querySelectorAll('.drag-item');
+            dragItems.forEach(item => {
+                item.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', this.textContent);
+                    this.style.opacity = '0.5';
+                });
+                item.addEventListener('dragend', function() {
+                    this.style.opacity = '1';
+                });
+            });
+            // Add event listeners for calendar days to accept drops
+            const calendarDays = document.querySelectorAll('.calendar-day');
+            calendarDays.forEach(day => {
+                day.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.style.backgroundColor = '#e3f2fd';
+                });
+                day.addEventListener('dragleave', function() {
+                    this.style.backgroundColor = '#f8f9fa';
+                });
+                day.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    const data = e.dataTransfer.getData('text/plain');
+                    this.style.backgroundColor = '#f8f9fa';
+                    // Create a new event element
+                    const newEvent = document.createElement('div');
+                    newEvent.className = 'calendar-event';
+                    newEvent.textContent = data;
+                    // Add to calendar day
+                    this.appendChild(newEvent);
+                    // Show confirmation
+                    alert(`Event "${data}" has been moved to ${this.querySelector('h4').textContent}`);
+                });
+            });
+            // Add keyboard support for role selection
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    const roleButtons = document.querySelectorAll('.role-btn');
+                    let currentIndex = -1;
+                    // Find current active button
+                    roleButtons.forEach((button, index) => {
+                        if (button.classList.contains('active')) {
+                            currentIndex = index;
+                        }
+                    });
+                    // Calculate new index
+                    let newIndex;
+                    if (e.key === 'ArrowLeft') {
+                        newIndex = currentIndex > 0 ? currentIndex - 1 : roleButtons.length - 1;
+                    } else {
+                        newIndex = currentIndex < roleButtons.length - 1 ? currentIndex + 1 : 0;
+                    }
+                    // Select new role
+                    const roles = ['admin', 'faculty', 'student'];
+                    selectRole(roles[newIndex]);
+                }
+                // Allow Enter key to submit form
+                if (e.key === 'Enter') {
+                    attemptLogin();
+                }
+            });
+            // Add hover effects for role buttons
+            document.querySelectorAll('.role-btn').forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.transform = 'translateY(-5px)';
+                    }
+                });
+                button.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
